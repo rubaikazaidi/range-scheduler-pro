@@ -33,7 +33,7 @@ function AuthLayout() {
     { to: "/coach/requests", label: "Requests", icon: Inbox },
     { to: "/coach/branches", label: "Branches", icon: Building2 },
   ];
-  const links = isCoach ? [...coachLinks, ...(isAdmin ? [{ to: "/admin/coaches", label: "Coaches", icon: ShieldCheck }] : [])] : studentLinks;
+  const links = isCoach ? [...coachLinks, ...(isAdmin ? [{ to: "/admin/accounts", label: "Accounts", icon: ShieldCheck }] : [])] : studentLinks;
   const roleLabel = isAdmin ? "Admin" : isCoach ? "Coach" : "Student";
 
   return (

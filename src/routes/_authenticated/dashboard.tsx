@@ -75,7 +75,7 @@ function Dashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isAdmin && (
-          <DashCard to="/admin/coaches" title="Coach accounts" desc="Create and manage coach logins." />
+          <DashCard to="/admin/accounts" title="Accounts" desc="Create coaches & students, edit or remove accounts." />
         )}
         {isCoach ? (
           <>
