@@ -1,25 +1,26 @@
-import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Target, Calendar, Users, Inbox, Building2, LogOut, LayoutDashboard, ListChecks, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/login" });
-  },
   component: AuthLayout,
 });
 
 function AuthLayout() {
   const { loading, user, profile, isCoach, isAdmin, signOut } = useAuth();
   const location = useLocation();
+  
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
-  if (!user) return null;
+  if (!user) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    return null;
+  }
 
   const studentLinks = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
