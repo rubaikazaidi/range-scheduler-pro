@@ -5,21 +5,23 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/login" });
-  },
   component: AuthLayout,
 });
 
 function AuthLayout() {
   const { loading, user, profile, isCoach, isAdmin, signOut } = useAuth();
   const location = useLocation();
+  const navigate = (typeof window !== "undefined") ? null : null;
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
-  if (!user) return null;
+  if (!user) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    return null;
+  }
 
   const studentLinks = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
