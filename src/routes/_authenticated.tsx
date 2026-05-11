@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthLayout() {
   const { loading, user, profile, isCoach, isAdmin, signOut } = useAuth();
   const location = useLocation();
-  const navigate = (typeof window !== "undefined") ? null : null;
+  
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
