@@ -22,6 +22,7 @@ import { Route as AuthenticatedCoachScheduleRouteImport } from './routes/_authen
 import { Route as AuthenticatedCoachRequestsRouteImport } from './routes/_authenticated/coach/requests'
 import { Route as AuthenticatedCoachBranchesRouteImport } from './routes/_authenticated/coach/branches'
 import { Route as AuthenticatedAdminCoachesRouteImport } from './routes/_authenticated/admin/coaches'
+import { Route as AuthenticatedAdminAccountsRouteImport } from './routes/_authenticated/admin/accounts'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -92,6 +93,12 @@ const AuthenticatedAdminCoachesRoute =
     path: '/admin/coaches',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminAccountsRoute =
+  AuthenticatedAdminAccountsRouteImport.update({
+    id: '/admin/accounts',
+    path: '/admin/accounts',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/schedule': typeof AuthenticatedScheduleRoute
+  '/admin/accounts': typeof AuthenticatedAdminAccountsRoute
   '/admin/coaches': typeof AuthenticatedAdminCoachesRoute
   '/coach/branches': typeof AuthenticatedCoachBranchesRoute
   '/coach/requests': typeof AuthenticatedCoachRequestsRoute
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/schedule': typeof AuthenticatedScheduleRoute
+  '/admin/accounts': typeof AuthenticatedAdminAccountsRoute
   '/admin/coaches': typeof AuthenticatedAdminCoachesRoute
   '/coach/branches': typeof AuthenticatedCoachBranchesRoute
   '/coach/requests': typeof AuthenticatedCoachRequestsRoute
@@ -131,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/schedule': typeof AuthenticatedScheduleRoute
+  '/_authenticated/admin/accounts': typeof AuthenticatedAdminAccountsRoute
   '/_authenticated/admin/coaches': typeof AuthenticatedAdminCoachesRoute
   '/_authenticated/coach/branches': typeof AuthenticatedCoachBranchesRoute
   '/_authenticated/coach/requests': typeof AuthenticatedCoachRequestsRoute
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/requests'
     | '/schedule'
+    | '/admin/accounts'
     | '/admin/coaches'
     | '/coach/branches'
     | '/coach/requests'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/requests'
     | '/schedule'
+    | '/admin/accounts'
     | '/admin/coaches'
     | '/coach/branches'
     | '/coach/requests'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/requests'
     | '/_authenticated/schedule'
+    | '/_authenticated/admin/accounts'
     | '/_authenticated/admin/coaches'
     | '/_authenticated/coach/branches'
     | '/_authenticated/coach/requests'
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCoachesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/accounts': {
+      id: '/_authenticated/admin/accounts'
+      path: '/admin/accounts'
+      fullPath: '/admin/accounts'
+      preLoaderRoute: typeof AuthenticatedAdminAccountsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -291,6 +311,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
   AuthenticatedScheduleRoute: typeof AuthenticatedScheduleRoute
+  AuthenticatedAdminAccountsRoute: typeof AuthenticatedAdminAccountsRoute
   AuthenticatedAdminCoachesRoute: typeof AuthenticatedAdminCoachesRoute
   AuthenticatedCoachBranchesRoute: typeof AuthenticatedCoachBranchesRoute
   AuthenticatedCoachRequestsRoute: typeof AuthenticatedCoachRequestsRoute
@@ -302,6 +323,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
   AuthenticatedScheduleRoute: AuthenticatedScheduleRoute,
+  AuthenticatedAdminAccountsRoute: AuthenticatedAdminAccountsRoute,
   AuthenticatedAdminCoachesRoute: AuthenticatedAdminCoachesRoute,
   AuthenticatedCoachBranchesRoute: AuthenticatedCoachBranchesRoute,
   AuthenticatedCoachRequestsRoute: AuthenticatedCoachRequestsRoute,

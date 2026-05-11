@@ -88,7 +88,7 @@ export const updateAccount = createServerFn({ method: "POST" })
   }).parse(data))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const patch: Record<string, unknown> = {};
+    const patch: { full_name?: string; primary_branch_id?: string | null } = {};
     if (data.fullName !== undefined) patch.full_name = data.fullName;
     if (data.branchId !== undefined) patch.primary_branch_id = data.branchId;
     if (Object.keys(patch).length) {
