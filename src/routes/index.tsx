@@ -25,7 +25,7 @@ function Index() {
             <p className="mt-1 text-sm text-muted-foreground">Check your batch timings and request changes.</p>
             <div className="mt-5 flex flex-col gap-2">
               <Button asChild>
-                <Link to="/login" search={{ role: "student" }}>Student log in</Link>
+                <Link to="/login">Student log in</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/signup">Sign up</Link>
@@ -39,7 +39,7 @@ function Index() {
             <p className="mt-1 text-sm text-muted-foreground">Manage schedules, students and branches.</p>
             <div className="mt-5 flex flex-col gap-2">
               <Button asChild>
-                <Link to="/login" search={{ role: "coach" }}>Coach log in</Link>
+                <Link to="/login">Coach log in</Link>
               </Button>
               <p className="text-xs text-muted-foreground">
                 New coach accounts are created by the admin only.
