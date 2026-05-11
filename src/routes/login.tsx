@@ -4,6 +4,7 @@ import { Target, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -11,10 +12,19 @@ export const Route = createFileRoute("/login")({ component: LoginPage });
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useState(() => {
+    return undefined;
+  });
+
+  if (!authLoading && user) {
+    void navigate({ to: "/dashboard" });
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +37,6 @@ function LoginPage() {
         return;
       }
       toast.success("Signed in");
-      // Wait a tick so the auth listener picks up the session before navigating
-      await new Promise((r) => setTimeout(r, 50));
-      await navigate({ to: "/dashboard" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign in failed");
     } finally {
