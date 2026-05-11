@@ -14,16 +14,227 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      branches: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          primary_branch_id: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id: string
+          primary_branch_id?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          primary_branch_id?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_primary_branch_id_fkey"
+            columns: ["primary_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reschedule_requests: {
+        Row: {
+          created_at: string
+          current_assignment_id: string | null
+          id: string
+          note: string | null
+          requested_slot_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_assignment_id?: string | null
+          id?: string
+          note?: string | null
+          requested_slot_id: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          current_assignment_id?: string | null
+          id?: string
+          note?: string | null
+          requested_slot_id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reschedule_requests_current_assignment_id_fkey"
+            columns: ["current_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "slot_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reschedule_requests_requested_slot_id_fkey"
+            columns: ["requested_slot_id"]
+            isOneToOne: false
+            referencedRelation: "slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slot_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          slot_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          slot_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          slot_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_assignments_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slots: {
+        Row: {
+          branch_id: string
+          capacity: number
+          created_at: string
+          created_by: string | null
+          end_time: string
+          id: string
+          notes: string | null
+          slot_date: string
+          start_time: string
+        }
+        Insert: {
+          branch_id: string
+          capacity?: number
+          created_at?: string
+          created_by?: string | null
+          end_time: string
+          id?: string
+          notes?: string | null
+          slot_date: string
+          start_time: string
+        }
+        Update: {
+          branch_id?: string
+          capacity?: number
+          created_at?: string
+          created_by?: string | null
+          end_time?: string
+          id?: string
+          notes?: string | null
+          slot_date?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slots_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "coach" | "student"
+      profile_status: "pending" | "approved" | "rejected"
+      request_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +361,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["coach", "student"],
+      profile_status: ["pending", "approved", "rejected"],
+      request_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const
