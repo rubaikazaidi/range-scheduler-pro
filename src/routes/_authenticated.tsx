@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { Target, Calendar, Users, Inbox, Building2, LogOut, LayoutDashboard, ListChecks } from "lucide-react";
+import { Target, Calendar, Users, Inbox, Building2, LogOut, LayoutDashboard, ListChecks, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthLayout() {
-  const { loading, user, profile, isCoach, signOut } = useAuth();
+  const { loading, user, profile, isCoach, isAdmin, signOut } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -33,7 +33,8 @@ function AuthLayout() {
     { to: "/coach/requests", label: "Requests", icon: Inbox },
     { to: "/coach/branches", label: "Branches", icon: Building2 },
   ];
-  const links = isCoach ? coachLinks : studentLinks;
+  const links = isCoach ? [...coachLinks, ...(isAdmin ? [{ to: "/admin/coaches", label: "Coaches", icon: ShieldCheck }] : [])] : studentLinks;
+  const roleLabel = isAdmin ? "Admin" : isCoach ? "Coach" : "Student";
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,7 +45,7 @@ function AuthLayout() {
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm opacity-80 sm:inline">
-              {profile?.full_name || user.email} · {isCoach ? "Coach" : "Student"}
+              {profile?.full_name || user.email} · {roleLabel}
             </span>
             <Button size="sm" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={signOut}>
               <LogOut className="mr-1 h-4 w-4" /> Sign out

@@ -9,24 +9,23 @@ import { ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: Dashboard });
 
 function Dashboard() {
-  const { profile, isCoach, isStudent, refresh, user } = useAuth();
-  const [coachCount, setCoachCount] = useState<number | null>(null);
+  const { profile, isCoach, isStudent, isAdmin, refresh, user } = useAuth();
+  const [adminCount, setAdminCount] = useState<number | null>(null);
   const [promoting, setPromoting] = useState(false);
 
   useEffect(() => {
-    supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "coach")
-      .then(({ count }) => setCoachCount(count ?? 0));
+    supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "admin")
+      .then(({ count }) => setAdminCount(count ?? 0));
   }, []);
 
-  const promoteSelf = async () => {
+  const becomeAdmin = async () => {
     if (!user) return;
     setPromoting(true);
-    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "coach" });
-    // also auto-approve
+    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "admin" });
     await supabase.from("profiles").update({ status: "approved" }).eq("id", user.id);
     setPromoting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("You are now a coach");
+    toast.success("You are now the admin");
     await refresh();
   };
 
@@ -35,19 +34,21 @@ function Dashboard() {
       <div>
         <h1 className="text-2xl font-semibold">Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}</h1>
         <p className="text-sm text-muted-foreground">
-          {isCoach ? "You have full coach access across all branches." : "Here's a quick view of your account."}
+          {isAdmin ? "You are the admin. Manage coach accounts and the full club." :
+            isCoach ? "You have coach access across all branches." :
+            "Here's a quick view of your account."}
         </p>
       </div>
 
-      {coachCount === 0 && (
+      {adminCount === 0 && (
         <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 text-accent" />
             <div className="flex-1">
-              <h3 className="font-medium">Bootstrap a coach account</h3>
-              <p className="text-sm text-muted-foreground">No coaches exist yet. As the first user, you can claim coach access to set up branches and approve students.</p>
+              <h3 className="font-medium">Bootstrap the admin account</h3>
+              <p className="text-sm text-muted-foreground">No admin exists yet. As the first user, claim the admin role to manage coach accounts and the club.</p>
             </div>
-            <Button onClick={promoteSelf} disabled={promoting}>{promoting ? "…" : "Become coach"}</Button>
+            <Button onClick={becomeAdmin} disabled={promoting}>{promoting ? "…" : "Become admin"}</Button>
           </div>
         </div>
       )}
@@ -73,6 +74,9 @@ function Dashboard() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {isAdmin && (
+          <DashCard to="/admin/coaches" title="Coach accounts" desc="Create and manage coach logins." />
+        )}
         {isCoach ? (
           <>
             <DashCard to="/coach/schedule" title="Schedule" desc="Build daily slots and assign students." />
