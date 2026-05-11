@@ -15,7 +15,6 @@ export const createCoachAccount = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Verify caller is admin
     const { data: roleRow, error: roleErr } = await supabase
       .from("user_roles")
       .select("role")
@@ -38,9 +37,6 @@ export const createCoachAccount = createServerFn({ method: "POST" })
     }
 
     const newId = created.user.id;
-
-    // The signup trigger auto-inserted a student role + pending profile.
-    // Replace with coach role and approved profile.
     await supabaseAdmin.from("user_roles").delete().eq("user_id", newId);
     const { error: roleInsertErr } = await supabaseAdmin
       .from("user_roles")
@@ -53,4 +49,48 @@ export const createCoachAccount = createServerFn({ method: "POST" })
       .eq("id", newId);
 
     return { id: newId, email: data.email, password };
+  });
+
+const createFirstAdminInput = z.object({
+  email: z.string().email(),
+  fullName: z.string().min(1),
+  password: z.string().min(6),
+});
+
+export const createFirstAdmin = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => createFirstAdminInput.parse(data))
+  .handler(async ({ data }) => {
+    // Only allowed when no admin exists yet
+    const { count, error: countErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id", { count: "exact", head: true })
+      .eq("role", "admin");
+    if (countErr) throw new Response(countErr.message, { status: 500 });
+    if ((count ?? 0) > 0) {
+      throw new Response("An admin account already exists.", { status: 403 });
+    }
+
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (createErr || !created.user) {
+      throw new Response(createErr?.message ?? "Failed to create user", { status: 400 });
+    }
+
+    const newId = created.user.id;
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", newId);
+    const { error: roleInsertErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: newId, role: "admin" });
+    if (roleInsertErr) throw new Response(roleInsertErr.message, { status: 500 });
+
+    await supabaseAdmin
+      .from("profiles")
+      .update({ status: "approved", full_name: data.fullName })
+      .eq("id", newId);
+
+    return { id: newId, email: data.email };
   });
