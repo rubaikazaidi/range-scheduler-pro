@@ -40,7 +40,7 @@ function AuthLayout() {
       <header className="border-b border-border bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold">
-            <Target className="h-5 w-5 text-accent" /> RangeOps
+            <Target className="h-5 w-5 text-accent" /> Lakshya Shooting Club
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm opacity-80 sm:inline">
