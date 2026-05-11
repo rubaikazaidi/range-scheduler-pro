@@ -47,6 +47,9 @@ function Index() {
             </div>
           </div>
         </div>
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          First time setting up the club? <Link to="/admin-setup" className="text-accent underline">Create the admin account</Link>
+        </p>
       </div>
     </div>
   );
