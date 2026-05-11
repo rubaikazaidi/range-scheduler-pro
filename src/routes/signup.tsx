@@ -53,7 +53,7 @@ function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
         <Link to="/" className="mb-6 flex items-center justify-center gap-2 font-semibold">
-          <Target className="h-5 w-5 text-accent" /> RangeOps
+          <Target className="h-5 w-5 text-accent" /> Lakshya Shooting Club
         </Link>
         <div className="rounded-lg border border-border bg-card p-6">
           <h1 className="text-xl font-semibold">Student sign up</h1>
