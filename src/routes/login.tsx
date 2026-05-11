@@ -19,10 +19,9 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { setLoading(false); toast.error(error.message); return; }
     toast.success("Signed in");
-    navigate({ to: "/dashboard" });
+    window.location.href = "/dashboard";
   };
 
   return (
