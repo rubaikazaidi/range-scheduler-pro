@@ -14,6 +14,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCoachStudentsRouteImport } from './routes/_authenticated/coach/students'
+import { Route as AuthenticatedCoachScheduleRouteImport } from './routes/_authenticated/coach/schedule'
+import { Route as AuthenticatedCoachRequestsRouteImport } from './routes/_authenticated/coach/requests'
+import { Route as AuthenticatedCoachBranchesRouteImport } from './routes/_authenticated/coach/branches'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -39,18 +43,50 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCoachStudentsRoute =
+  AuthenticatedCoachStudentsRouteImport.update({
+    id: '/coach/students',
+    path: '/coach/students',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCoachScheduleRoute =
+  AuthenticatedCoachScheduleRouteImport.update({
+    id: '/coach/schedule',
+    path: '/coach/schedule',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCoachRequestsRoute =
+  AuthenticatedCoachRequestsRouteImport.update({
+    id: '/coach/requests',
+    path: '/coach/requests',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCoachBranchesRoute =
+  AuthenticatedCoachBranchesRouteImport.update({
+    id: '/coach/branches',
+    path: '/coach/branches',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/coach/branches': typeof AuthenticatedCoachBranchesRoute
+  '/coach/requests': typeof AuthenticatedCoachRequestsRoute
+  '/coach/schedule': typeof AuthenticatedCoachScheduleRoute
+  '/coach/students': typeof AuthenticatedCoachStudentsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/coach/branches': typeof AuthenticatedCoachBranchesRoute
+  '/coach/requests': typeof AuthenticatedCoachRequestsRoute
+  '/coach/schedule': typeof AuthenticatedCoachScheduleRoute
+  '/coach/students': typeof AuthenticatedCoachStudentsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +95,32 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/coach/branches': typeof AuthenticatedCoachBranchesRoute
+  '/_authenticated/coach/requests': typeof AuthenticatedCoachRequestsRoute
+  '/_authenticated/coach/schedule': typeof AuthenticatedCoachScheduleRoute
+  '/_authenticated/coach/students': typeof AuthenticatedCoachStudentsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/coach/branches'
+    | '/coach/requests'
+    | '/coach/schedule'
+    | '/coach/students'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/coach/branches'
+    | '/coach/requests'
+    | '/coach/schedule'
+    | '/coach/students'
   id:
     | '__root__'
     | '/'
@@ -72,6 +128,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authenticated/dashboard'
+    | '/_authenticated/coach/branches'
+    | '/_authenticated/coach/requests'
+    | '/_authenticated/coach/schedule'
+    | '/_authenticated/coach/students'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,15 +178,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/coach/students': {
+      id: '/_authenticated/coach/students'
+      path: '/coach/students'
+      fullPath: '/coach/students'
+      preLoaderRoute: typeof AuthenticatedCoachStudentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/coach/schedule': {
+      id: '/_authenticated/coach/schedule'
+      path: '/coach/schedule'
+      fullPath: '/coach/schedule'
+      preLoaderRoute: typeof AuthenticatedCoachScheduleRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/coach/requests': {
+      id: '/_authenticated/coach/requests'
+      path: '/coach/requests'
+      fullPath: '/coach/requests'
+      preLoaderRoute: typeof AuthenticatedCoachRequestsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/coach/branches': {
+      id: '/_authenticated/coach/branches'
+      path: '/coach/branches'
+      fullPath: '/coach/branches'
+      preLoaderRoute: typeof AuthenticatedCoachBranchesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedCoachBranchesRoute: typeof AuthenticatedCoachBranchesRoute
+  AuthenticatedCoachRequestsRoute: typeof AuthenticatedCoachRequestsRoute
+  AuthenticatedCoachScheduleRoute: typeof AuthenticatedCoachScheduleRoute
+  AuthenticatedCoachStudentsRoute: typeof AuthenticatedCoachStudentsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedCoachBranchesRoute: AuthenticatedCoachBranchesRoute,
+  AuthenticatedCoachRequestsRoute: AuthenticatedCoachRequestsRoute,
+  AuthenticatedCoachScheduleRoute: AuthenticatedCoachScheduleRoute,
+  AuthenticatedCoachStudentsRoute: AuthenticatedCoachStudentsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -142,3 +238,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
