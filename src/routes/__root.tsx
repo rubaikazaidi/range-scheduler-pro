@@ -58,8 +58,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RangeOps — Rifle Range Scheduling" },
-      { name: "description", content: "Manage shooting range branches, batches and student schedules." },
+      { title: "Lakshya Shooting Club" },
+      { name: "description", content: "Lakshya Shooting Club — batch timings and schedules for coaches and students." },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
