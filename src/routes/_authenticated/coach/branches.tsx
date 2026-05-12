@@ -28,7 +28,7 @@ function BranchesPage() {
   const [addOpen, setAddOpen] = useState<string | null>(null); // branchId
   const [addTab, setAddTab] = useState<"coach" | "student">("student");
   const [search, setSearch] = useState("");
-  const [confirm, setConfirm] = useState<{ member: Member; targetBranch: Branch } | null>(null);
+  const [switchConfirm, setConfirm] = useState<{ member: Member; targetBranch: Branch } | null>(null);
 
   const branchById = useMemo(() => new Map(branches.map((b) => [b.id, b])), [branches]);
 
@@ -214,21 +214,21 @@ function BranchesPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
+      <AlertDialog open={switchConfirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Switch branch?</AlertDialogTitle>
             <AlertDialogDescription>
-              {confirm && (() => {
-                const cur = confirm.member.primary_branch_id ? branchById.get(confirm.member.primary_branch_id) : null;
-                return `Student is already in '${cur?.name ?? "another branch"}'. Continue to switch them to '${confirm.targetBranch.name}' branch?`;
+              {switchConfirm && (() => {
+                const cur = switchConfirm.member.primary_branch_id ? branchById.get(switchConfirm.member.primary_branch_id) : null;
+                return `Student is already in '${cur?.name ?? "another branch"}'. Continue to switch them to '${switchConfirm.targetBranch.name}' branch?`;
               })()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
-              if (confirm) void assign(confirm.member.id, confirm.targetBranch.id);
+              if (switchConfirm) void assign(switchConfirm.member.id, switchConfirm.targetBranch.id);
               setConfirm(null);
             }}>Switch</AlertDialogAction>
           </AlertDialogFooter>
