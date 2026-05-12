@@ -63,7 +63,7 @@ function BranchesPage() {
     setName(""); setLocation(""); setOpen(false); void load();
   };
   const remove = async (id: string) => {
-    if (!confirm("Delete this branch? This will remove related slots.")) return;
+    if (!window.confirm("Delete this branch? This will remove related slots.")) return;
     const { error } = await supabase.from("branches").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Deleted"); void load();
