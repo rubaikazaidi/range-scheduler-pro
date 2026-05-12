@@ -17,10 +17,17 @@ async function assertStaff(userId: string) {
     throw new Response("Forbidden: staff only", { status: 403 });
 }
 
+const shooterTypeEnum = z.enum(["club", "state", "national", "trials"]);
+
 const createCoachInput = z.object({
   email: z.string().email(),
   fullName: z.string().min(1),
   password: z.string().min(6).optional(),
+  isHeadCoach: z.boolean().optional(),
+  branchId: z.string().uuid().nullable().optional(),
+  age: z.number().int().positive().nullable().optional(),
+  gender: z.string().nullable().optional(),
+  birthday: z.string().nullable().optional(),
 });
 
 export const createCoachAccount = createServerFn({ method: "POST" })
@@ -31,13 +38,21 @@ export const createCoachAccount = createServerFn({ method: "POST" })
     const password = data.password ?? "Lakshya@123";
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: data.email, password, email_confirm: true,
-      user_metadata: { full_name: data.fullName },
+      user_metadata: { full_name: data.fullName, primary_branch_id: data.branchId ?? null },
     });
     if (error || !created.user) throw new Response(error?.message ?? "Failed", { status: 400 });
     const newId = created.user.id;
     await supabaseAdmin.from("user_roles").delete().eq("user_id", newId);
     await supabaseAdmin.from("user_roles").insert({ user_id: newId, role: "coach" });
-    await supabaseAdmin.from("profiles").update({ status: "approved", full_name: data.fullName }).eq("id", newId);
+    await supabaseAdmin.from("profiles").update({
+      status: "approved",
+      full_name: data.fullName,
+      primary_branch_id: data.branchId ?? null,
+      is_head_coach: data.isHeadCoach ?? false,
+      age: data.age ?? null,
+      gender: data.gender ?? null,
+      birthday: data.birthday ?? null,
+    }).eq("id", newId);
     return { id: newId, email: data.email, password };
   });
 
@@ -46,6 +61,11 @@ const createStudentInput = z.object({
   fullName: z.string().min(1),
   branchId: z.string().uuid(),
   password: z.string().min(6).optional(),
+  shooterType: shooterTypeEnum,
+  age: z.number().int().positive().nullable().optional(),
+  gender: z.string().nullable().optional(),
+  birthday: z.string().nullable().optional(),
+  memberNumber: z.string().nullable().optional(),
 });
 
 export const createStudentAccount = createServerFn({ method: "POST" })
@@ -63,7 +83,14 @@ export const createStudentAccount = createServerFn({ method: "POST" })
     await supabaseAdmin.from("user_roles").delete().eq("user_id", newId);
     await supabaseAdmin.from("user_roles").insert({ user_id: newId, role: "student" });
     await supabaseAdmin.from("profiles").update({
-      status: "approved", full_name: data.fullName, primary_branch_id: data.branchId,
+      status: "approved",
+      full_name: data.fullName,
+      primary_branch_id: data.branchId,
+      shooter_type: data.shooterType,
+      age: data.age ?? null,
+      gender: data.gender ?? null,
+      birthday: data.birthday ?? null,
+      member_number: data.memberNumber ?? null,
     }).eq("id", newId);
     return { id: newId, email: data.email, password };
   });
@@ -85,12 +112,24 @@ export const updateAccount = createServerFn({ method: "POST" })
     userId: z.string().uuid(),
     fullName: z.string().min(1).optional(),
     branchId: z.string().uuid().nullable().optional(),
+    isHeadCoach: z.boolean().optional(),
+    age: z.number().int().positive().nullable().optional(),
+    gender: z.string().nullable().optional(),
+    birthday: z.string().nullable().optional(),
+    shooterType: shooterTypeEnum.nullable().optional(),
+    memberNumber: z.string().nullable().optional(),
   }).parse(data))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    const patch: { full_name?: string; primary_branch_id?: string | null } = {};
+    await assertStaff(context.userId);
+    const patch: Record<string, unknown> = {};
     if (data.fullName !== undefined) patch.full_name = data.fullName;
     if (data.branchId !== undefined) patch.primary_branch_id = data.branchId;
+    if (data.isHeadCoach !== undefined) patch.is_head_coach = data.isHeadCoach;
+    if (data.age !== undefined) patch.age = data.age;
+    if (data.gender !== undefined) patch.gender = data.gender;
+    if (data.birthday !== undefined) patch.birthday = data.birthday;
+    if (data.shooterType !== undefined) patch.shooter_type = data.shooterType;
+    if (data.memberNumber !== undefined) patch.member_number = data.memberNumber;
     if (Object.keys(patch).length) {
       const { error } = await supabaseAdmin.from("profiles").update(patch).eq("id", data.userId);
       if (error) throw new Response(error.message, { status: 400 });
@@ -106,7 +145,7 @@ export const listAccounts = createServerFn({ method: "GET" })
     if (error) throw new Response(error.message, { status: 500 });
     const ids = usersResp.users.map((u) => u.id);
     const [{ data: profs }, { data: roles }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id,full_name,primary_branch_id,status").in("id", ids),
+      supabaseAdmin.from("profiles").select("id,full_name,primary_branch_id,status,is_head_coach,age,gender,birthday,shooter_type,member_number").in("id", ids),
       supabaseAdmin.from("user_roles").select("user_id,role").in("user_id", ids),
     ]);
     const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
@@ -126,6 +165,12 @@ export const listAccounts = createServerFn({ method: "GET" })
         branchId: p?.primary_branch_id ?? null,
         status: (p?.status as string) ?? "pending",
         role: rs.includes("admin") ? "admin" : rs.includes("coach") ? "coach" : "student",
+        isHeadCoach: Boolean(p?.is_head_coach),
+        age: (p?.age as number | null) ?? null,
+        gender: (p?.gender as string | null) ?? null,
+        birthday: (p?.birthday as string | null) ?? null,
+        shooterType: (p?.shooter_type as string | null) ?? null,
+        memberNumber: (p?.member_number as string | null) ?? null,
       };
     });
   });
