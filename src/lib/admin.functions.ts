@@ -121,7 +121,16 @@ export const updateAccount = createServerFn({ method: "POST" })
   }).parse(data))
   .handler(async ({ data, context }) => {
     await assertStaff(context.userId);
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      full_name?: string;
+      primary_branch_id?: string | null;
+      is_head_coach?: boolean;
+      age?: number | null;
+      gender?: string | null;
+      birthday?: string | null;
+      shooter_type?: "club" | "state" | "national" | "trials" | null;
+      member_number?: string | null;
+    } = {};
     if (data.fullName !== undefined) patch.full_name = data.fullName;
     if (data.branchId !== undefined) patch.primary_branch_id = data.branchId;
     if (data.isHeadCoach !== undefined) patch.is_head_coach = data.isHeadCoach;
