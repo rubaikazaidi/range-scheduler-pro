@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Trash2, Building2, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Building2, ChevronDown, ChevronRight, UserPlus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 
@@ -16,13 +18,19 @@ interface Branch { id: string; name: string; location: string | null }
 interface Member { id: string; full_name: string; primary_branch_id: string | null; role: "coach" | "student" | "admin" }
 
 function BranchesPage() {
-  const { isCoach } = useAuth();
+  const { isCoach, isAdmin } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [addOpen, setAddOpen] = useState<string | null>(null); // branchId
+  const [addTab, setAddTab] = useState<"coach" | "student">("student");
+  const [search, setSearch] = useState("");
+  const [confirm, setConfirm] = useState<{ member: Member; targetBranch: Branch } | null>(null);
+
+  const branchById = useMemo(() => new Map(branches.map((b) => [b.id, b])), [branches]);
 
   const load = async () => {
     const [{ data: br }, { data: profs }, { data: roles }] = await Promise.all([
@@ -34,7 +42,6 @@ function BranchesPage() {
     const roleMap = new Map<string, string>();
     (roles ?? []).forEach((r) => {
       const cur = roleMap.get(r.user_id);
-      // admin > coach > student priority
       if (cur === "admin") return;
       if (r.role === "admin" || (r.role === "coach" && cur !== "admin") || !cur) {
         roleMap.set(r.user_id, r.role as string);
@@ -67,6 +74,25 @@ function BranchesPage() {
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+  };
+
+  const assign = async (memberId: string, branchId: string) => {
+    const { error } = await supabase.from("profiles").update({ primary_branch_id: branchId }).eq("id", memberId);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Member assigned");
+    void load();
+  };
+
+  const handleAdd = (m: Member, branchId: string) => {
+    if (m.primary_branch_id === branchId) {
+      toast.info("Already in this branch");
+      return;
+    }
+    if (m.role === "student" && m.primary_branch_id) {
+      const target = branchById.get(branchId);
+      if (target) { setConfirm({ member: m, targetBranch: target }); return; }
+    }
+    void assign(m.id, branchId);
   };
 
   return (
@@ -114,7 +140,14 @@ function BranchesPage() {
                       </div>
                     </div>
                   </button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(b.id)}><Trash2 className="h-4 w-4" /></Button>
+                  <div className="flex gap-1">
+                    {isAdmin && (
+                      <Button size="sm" variant="outline" onClick={() => { setAddOpen(b.id); setSearch(""); setAddTab("student"); }}>
+                        <UserPlus className="mr-1 h-4 w-4" /> Add member
+                      </Button>
+                    )}
+                    <Button size="icon" variant="ghost" onClick={() => remove(b.id)}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
                 </div>
                 {isOpen && (
                   <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
@@ -135,6 +168,72 @@ function BranchesPage() {
           })}
         </div>
       )}
+
+      <Dialog open={addOpen !== null} onOpenChange={(o) => !o && setAddOpen(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add member to {addOpen ? branchById.get(addOpen)?.name : ""}</DialogTitle>
+          </DialogHeader>
+          <Tabs value={addTab} onValueChange={(v) => setAddTab(v as "coach" | "student")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="student">Students</TabsTrigger>
+              <TabsTrigger value="coach">Coaches</TabsTrigger>
+            </TabsList>
+            <Input className="mt-3" placeholder="Search by name…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            {(["student", "coach"] as const).map((tab) => (
+              <TabsContent key={tab} value={tab} className="mt-3 max-h-80 overflow-y-auto">
+                {(() => {
+                  const list = members.filter((m) => {
+                    if (tab === "student" && m.role !== "student") return false;
+                    if (tab === "coach" && m.role !== "coach" && m.role !== "admin") return false;
+                    if (m.primary_branch_id === addOpen) return false;
+                    if (search && !(m.full_name || "").toLowerCase().includes(search.toLowerCase())) return false;
+                    return true;
+                  });
+                  if (list.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">No {tab}s available.</p>;
+                  return (
+                    <ul className="divide-y divide-border">
+                      {list.map((m) => {
+                        const cur = m.primary_branch_id ? branchById.get(m.primary_branch_id) : null;
+                        return (
+                          <li key={m.id} className="flex items-center justify-between py-2">
+                            <div>
+                              <p className="text-sm font-medium">{m.full_name || "(no name)"}</p>
+                              <p className="text-xs text-muted-foreground">{cur ? `In ${cur.name}` : "Unassigned"}</p>
+                            </div>
+                            <Button size="sm" onClick={() => addOpen && handleAdd(m, addOpen)}>Add</Button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                })()}
+              </TabsContent>
+            ))}
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Switch branch?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm && (() => {
+                const cur = confirm.member.primary_branch_id ? branchById.get(confirm.member.primary_branch_id) : null;
+                return `Student is already in '${cur?.name ?? "another branch"}'. Continue to switch them to '${confirm.targetBranch.name}' branch?`;
+              })()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (confirm) void assign(confirm.member.id, confirm.targetBranch.id);
+              setConfirm(null);
+            }}>Switch</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
