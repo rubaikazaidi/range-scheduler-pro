@@ -37,26 +37,44 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
+          birthday: string | null
           created_at: string
           full_name: string
+          gender: string | null
           id: string
+          is_head_coach: boolean
+          member_number: string | null
           primary_branch_id: string | null
+          shooter_type: Database["public"]["Enums"]["shooter_type"] | null
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
         }
         Insert: {
+          age?: number | null
+          birthday?: string | null
           created_at?: string
           full_name?: string
+          gender?: string | null
           id: string
+          is_head_coach?: boolean
+          member_number?: string | null
           primary_branch_id?: string | null
+          shooter_type?: Database["public"]["Enums"]["shooter_type"] | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Update: {
+          age?: number | null
+          birthday?: string | null
           created_at?: string
           full_name?: string
+          gender?: string | null
           id?: string
+          is_head_coach?: boolean
+          member_number?: string | null
           primary_branch_id?: string | null
+          shooter_type?: Database["public"]["Enums"]["shooter_type"] | null
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
@@ -235,6 +253,7 @@ export type Database = {
       app_role: "coach" | "student" | "admin"
       profile_status: "pending" | "approved" | "rejected"
       request_status: "pending" | "approved" | "rejected"
+      shooter_type: "club" | "state" | "national" | "trials"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -365,6 +384,7 @@ export const Constants = {
       app_role: ["coach", "student", "admin"],
       profile_status: ["pending", "approved", "rejected"],
       request_status: ["pending", "approved", "rejected"],
+      shooter_type: ["club", "state", "national", "trials"],
     },
   },
 } as const
