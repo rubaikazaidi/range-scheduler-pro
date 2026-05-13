@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Target, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,29 +18,23 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Always force a fresh login: sign out any existing session when visiting /login
-  useEffect(() => {
-    void supabase.auth.signOut();
-  }, []);
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     setErrorMessage(null);
     setLoading(true);
     try {
-      // Make sure we don't reuse a stale session
-      await supabase.auth.signOut();
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error || !data.session) {
         const raw = error?.message?.toLowerCase() ?? "";
         let message = error?.message ?? "Invalid email or password";
         if (raw.includes("invalid login") || raw.includes("invalid credentials") || raw.includes("invalid email or password")) {
-          message = "Incorrect password (or email). Please try again.";
+          message = "Incorrect email or password. Please try again.";
         } else if (raw.includes("email not confirmed")) {
           message = "Email not confirmed yet. Please verify your email first.";
         }
         setErrorMessage(message);
+        setPassword("");
         toast.error(message);
         return;
       }
