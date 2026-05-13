@@ -58,12 +58,21 @@ function StudentsPage() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!branchId) { toast.error("Pick a branch"); return; }
+    if (!shooterType) { toast.error("Pick shooter type"); return; }
     setBusy(true);
     try {
-      const r = await createStudentAccount({ data: { email, fullName: name, branchId, password: pwd || undefined } });
+      const r = await createStudentAccount({ data: {
+        email, fullName: name, branchId, password: pwd || undefined,
+        shooterType,
+        age: age ? Number(age) : null,
+        gender: gender || null,
+        birthday: birthday || null,
+        memberNumber: memberNumber || null,
+      } });
       setLastCreated({ email: r.email, password: r.password });
       toast.success("Student created");
-      setEmail(""); setName(""); setPwd(""); setBranchId(""); setOpen(false);
+      setEmail(""); setName(""); setPwd(""); setBranchId(""); setShooterType("");
+      setAge(""); setGender(""); setBirthday(""); setMemberNumber(""); setOpen(false);
       await load();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
     finally { setBusy(false); }
