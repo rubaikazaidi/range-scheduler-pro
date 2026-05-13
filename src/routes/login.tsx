@@ -12,18 +12,16 @@ export const Route = createFileRoute("/login")({ component: LoginPage });
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Always force a fresh login: sign out any existing session when visiting /login
   useEffect(() => {
-    if (!authLoading && user) {
-      void navigate({ to: "/dashboard" });
-    }
-  }, [authLoading, navigate, user]);
+    void supabase.auth.signOut();
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,14 +29,23 @@ function LoginPage() {
     setErrorMessage(null);
     setLoading(true);
     try {
+      // Make sure we don't reuse a stale session
+      await supabase.auth.signOut();
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error || !data.session) {
-        const message = error?.message ?? "Invalid email or password";
+        const raw = error?.message?.toLowerCase() ?? "";
+        let message = error?.message ?? "Invalid email or password";
+        if (raw.includes("invalid login") || raw.includes("invalid credentials") || raw.includes("invalid email or password")) {
+          message = "Incorrect password (or email). Please try again.";
+        } else if (raw.includes("email not confirmed")) {
+          message = "Email not confirmed yet. Please verify your email first.";
+        }
         setErrorMessage(message);
         toast.error(message);
         return;
       }
       toast.success("Signed in");
+      void navigate({ to: "/dashboard" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
       setErrorMessage(message);
