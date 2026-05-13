@@ -31,12 +31,14 @@ function StudentsPage() {
   const [lastCreated, setLastCreated] = useState<{ email: string; password: string } | null>(null);
 
   const load = async () => {
-    const [{ data: br }, { data: pr }] = await Promise.all([
+    const [{ data: br }, { data: pr }, { data: roles }] = await Promise.all([
       supabase.from("branches").select("id,name").order("name"),
       supabase.from("profiles").select("id,full_name,status,primary_branch_id").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("user_id,role"),
     ]);
+    const studentIds = new Set((roles ?? []).filter((r) => r.role === "student").map((r) => r.user_id));
     setBranches((br as Branch[]) ?? []);
-    setStudents((pr as Profile[]) ?? []);
+    setStudents(((pr as Profile[]) ?? []).filter((p) => studentIds.has(p.id)));
   };
   useEffect(() => { void load(); }, []);
 
