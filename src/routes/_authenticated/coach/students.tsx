@@ -93,19 +93,48 @@ function StudentsPage() {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="mr-1 h-4 w-4" /> New student</Button></DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>New student account</DialogTitle></DialogHeader>
             <form onSubmit={create} className="space-y-3">
               <div><Label>Full name</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
               <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-              <div>
-                <Label>Branch</Label>
-                <Select value={branchId} onValueChange={setBranchId}>
-                  <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
-                  <SelectContent>
-                    {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Default branch</Label>
+                  <Select value={branchId} onValueChange={setBranchId}>
+                    <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Shooter type</Label>
+                  <Select value={shooterType} onValueChange={(v) => setShooterType(v as ShooterType)}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent>
+                      {SHOOTER_TYPES.map((t) => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Age</Label><Input type="number" min="1" value={age} onChange={(e) => setAge(e.target.value)} /></div>
+                <div>
+                  <Label>Gender</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Birthday</Label><Input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} /></div>
+                <div><Label>Member number</Label><Input value={memberNumber} onChange={(e) => setMemberNumber(e.target.value)} /></div>
               </div>
               <div><Label>Password (optional)</Label><Input placeholder="Default: Lakshya@123" value={pwd} onChange={(e) => setPwd(e.target.value)} /></div>
               <DialogFooter><Button type="submit" disabled={busy}>{busy ? "…" : "Create"}</Button></DialogFooter>
