@@ -72,7 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refresh = async () => {
     if (user) await loadUserData(user.id);
   };
-  const signOut = async () => { await supabase.auth.signOut(); };
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    if (typeof window !== "undefined") window.location.href = "/";
+  };
 
   return (
     <AuthContext.Provider value={{
