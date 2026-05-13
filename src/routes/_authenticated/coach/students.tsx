@@ -15,6 +15,8 @@ import { Plus, Copy } from "lucide-react";
 export const Route = createFileRoute("/_authenticated/coach/students")({ component: StudentsPage });
 
 interface Branch { id: string; name: string }
+type ShooterType = "club" | "state" | "national" | "trials";
+const SHOOTER_TYPES: ShooterType[] = ["club", "state", "national", "trials"];
 interface Profile { id: string; full_name: string; status: "pending" | "approved" | "rejected"; primary_branch_id: string | null }
 
 function StudentsPage() {
@@ -27,6 +29,9 @@ function StudentsPage() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState(""); const [name, setName] = useState("");
   const [pwd, setPwd] = useState(""); const [branchId, setBranchId] = useState("");
+  const [shooterType, setShooterType] = useState<ShooterType | "">("");
+  const [age, setAge] = useState(""); const [gender, setGender] = useState("");
+  const [birthday, setBirthday] = useState(""); const [memberNumber, setMemberNumber] = useState("");
   const [busy, setBusy] = useState(false);
   const [lastCreated, setLastCreated] = useState<{ email: string; password: string } | null>(null);
 
@@ -53,12 +58,21 @@ function StudentsPage() {
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!branchId) { toast.error("Pick a branch"); return; }
+    if (!shooterType) { toast.error("Pick shooter type"); return; }
     setBusy(true);
     try {
-      const r = await createStudentAccount({ data: { email, fullName: name, branchId, password: pwd || undefined } });
+      const r = await createStudentAccount({ data: {
+        email, fullName: name, branchId, password: pwd || undefined,
+        shooterType,
+        age: age ? Number(age) : null,
+        gender: gender || null,
+        birthday: birthday || null,
+        memberNumber: memberNumber || null,
+      } });
       setLastCreated({ email: r.email, password: r.password });
       toast.success("Student created");
-      setEmail(""); setName(""); setPwd(""); setBranchId(""); setOpen(false);
+      setEmail(""); setName(""); setPwd(""); setBranchId(""); setShooterType("");
+      setAge(""); setGender(""); setBirthday(""); setMemberNumber(""); setOpen(false);
       await load();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Failed"); }
     finally { setBusy(false); }
@@ -79,19 +93,48 @@ function StudentsPage() {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="mr-1 h-4 w-4" /> New student</Button></DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>New student account</DialogTitle></DialogHeader>
             <form onSubmit={create} className="space-y-3">
               <div><Label>Full name</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
               <div><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-              <div>
-                <Label>Branch</Label>
-                <Select value={branchId} onValueChange={setBranchId}>
-                  <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
-                  <SelectContent>
-                    {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Default branch</Label>
+                  <Select value={branchId} onValueChange={setBranchId}>
+                    <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Shooter type</Label>
+                  <Select value={shooterType} onValueChange={(v) => setShooterType(v as ShooterType)}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent>
+                      {SHOOTER_TYPES.map((t) => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Age</Label><Input type="number" min="1" value={age} onChange={(e) => setAge(e.target.value)} /></div>
+                <div>
+                  <Label>Gender</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Birthday</Label><Input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} /></div>
+                <div><Label>Member number</Label><Input value={memberNumber} onChange={(e) => setMemberNumber(e.target.value)} /></div>
               </div>
               <div><Label>Password (optional)</Label><Input placeholder="Default: Lakshya@123" value={pwd} onChange={(e) => setPwd(e.target.value)} /></div>
               <DialogFooter><Button type="submit" disabled={busy}>{busy ? "…" : "Create"}</Button></DialogFooter>
