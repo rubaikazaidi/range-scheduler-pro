@@ -15,6 +15,8 @@ import { Plus, Copy } from "lucide-react";
 export const Route = createFileRoute("/_authenticated/coach/students")({ component: StudentsPage });
 
 interface Branch { id: string; name: string }
+type ShooterType = "club" | "state" | "national" | "trials";
+const SHOOTER_TYPES: ShooterType[] = ["club", "state", "national", "trials"];
 interface Profile { id: string; full_name: string; status: "pending" | "approved" | "rejected"; primary_branch_id: string | null }
 
 function StudentsPage() {
@@ -27,6 +29,9 @@ function StudentsPage() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState(""); const [name, setName] = useState("");
   const [pwd, setPwd] = useState(""); const [branchId, setBranchId] = useState("");
+  const [shooterType, setShooterType] = useState<ShooterType | "">("");
+  const [age, setAge] = useState(""); const [gender, setGender] = useState("");
+  const [birthday, setBirthday] = useState(""); const [memberNumber, setMemberNumber] = useState("");
   const [busy, setBusy] = useState(false);
   const [lastCreated, setLastCreated] = useState<{ email: string; password: string } | null>(null);
 
