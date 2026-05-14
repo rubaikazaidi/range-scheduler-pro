@@ -103,8 +103,8 @@ function CoachSchedule() {
 
   const availableToAssign = useMemo(() => {
     if (!assignSlot) return [];
-    const assignedIds = new Set(slotAssignments(assignSlot.id).map((a) => a.student_id));
-    return students.filter((s) => !assignedIds.has(s.id));
+    const assignedAnywhereToday = new Set(assignments.map((a) => a.student_id));
+    return students.filter((s) => !assignedAnywhereToday.has(s.id));
   }, [assignSlot, students, assignments]);
 
   return (
