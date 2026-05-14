@@ -5,10 +5,18 @@ import { Target, Calendar, Users, Inbox, Building2, LogOut, LayoutDashboard, Lis
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
-      throw redirect({ to: "/login" });
+  beforeLoad: async ({ location }) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      throw redirect({
+        to: "/login",
+        search: {
+          redirect: `${location.pathname}${location.search}${location.hash}`,
+        },
+      });
     }
   },
   component: AuthLayout,
