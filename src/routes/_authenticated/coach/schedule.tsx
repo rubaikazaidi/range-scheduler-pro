@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
-import { ChevronLeft, ChevronRight, Plus, Trash2, UserPlus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Plus, Trash2, UserPlus, X } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/coach/schedule")({ component: CoachSchedule });
