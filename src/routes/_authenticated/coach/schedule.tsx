@@ -152,6 +152,10 @@ function CoachSchedule() {
           <h1 className="text-2xl font-semibold">Schedule</h1>
           <p className="text-sm text-muted-foreground">Build daily slots and assign students.</p>
         </div>
+        <div className="flex gap-2">
+        <Button variant="outline" disabled={!branchId} onClick={copyFromPreviousDay}>
+          <Copy className="mr-1 h-4 w-4" /> Copy previous day
+        </Button>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
           <DialogTrigger asChild>
             <Button disabled={!branchId}><Plus className="mr-1 h-4 w-4" /> New slot</Button>
