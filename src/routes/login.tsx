@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Target, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,16 +18,14 @@ export const Route = createFileRoute("/login")({
     } = await supabase.auth.getSession();
 
     if (session) {
-      if (typeof window !== "undefined") {
-        window.location.replace(search.redirect);
-      }
-      throw redirect({ to: "/dashboard" });
+      throw redirect({ href: search.redirect, replace: true });
     }
   },
   component: LoginPage,
 });
 
 function LoginPage() {
+  const navigate = useNavigate();
   const search = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +54,7 @@ function LoginPage() {
         return;
       }
       toast.success("Signed in");
-      window.location.replace(search.redirect);
+      await navigate({ href: search.redirect, replace: true });
       return;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
