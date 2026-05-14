@@ -40,7 +40,7 @@ function Dashboard() {
         </p>
       </div>
 
-      {adminCount === 0 && (
+      {adminCount === 0 && !isStudent && (
         <div className="rounded-lg border border-accent/50 bg-accent/5 p-4">
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 text-accent" />
