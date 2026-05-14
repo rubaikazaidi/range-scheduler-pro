@@ -50,12 +50,14 @@ function CoachSchedule() {
 
   const load = async () => {
     if (!branchId) return;
-    const [{ data: sl }, { data: st }] = await Promise.all([
+    const [{ data: sl }, { data: st }, { data: roleRows }] = await Promise.all([
       supabase.from("slots").select("*").eq("branch_id", branchId).eq("slot_date", date).order("start_time"),
       supabase.from("profiles").select("id,full_name,primary_branch_id,status").eq("primary_branch_id", branchId).eq("status", "approved"),
+      supabase.from("user_roles").select("user_id").eq("role", "student"),
     ]);
     setSlots((sl as Slot[]) ?? []);
-    setStudents((st as Profile[]) ?? []);
+    const studentIds = new Set(((roleRows ?? []) as { user_id: string }[]).map((r) => r.user_id));
+    setStudents(((st as Profile[]) ?? []).filter((p) => studentIds.has(p.id)));
     const ids = ((sl as Slot[]) ?? []).map((s) => s.id);
     if (ids.length) {
       const { data: ass } = await supabase.from("slot_assignments").select("*").in("slot_id", ids);
@@ -101,8 +103,8 @@ function CoachSchedule() {
 
   const availableToAssign = useMemo(() => {
     if (!assignSlot) return [];
-    const assignedIds = new Set(slotAssignments(assignSlot.id).map((a) => a.student_id));
-    return students.filter((s) => !assignedIds.has(s.id));
+    const assignedAnywhereToday = new Set(assignments.map((a) => a.student_id));
+    return students.filter((s) => !assignedAnywhereToday.has(s.id));
   }, [assignSlot, students, assignments]);
 
   return (
