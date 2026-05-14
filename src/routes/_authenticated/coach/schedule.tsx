@@ -171,6 +171,7 @@ function CoachSchedule() {
             <DialogFooter><Button onClick={createSlot}>Create</Button></DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
