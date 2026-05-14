@@ -101,6 +101,44 @@ function CoachSchedule() {
     void load();
   };
 
+  const copyFromPreviousDay = async () => {
+    if (!branchId || !user) return;
+    const prevDate = format(addDays(parseISO(date), -1), "yyyy-MM-dd");
+    const { data: prevSlots, error: prevErr } = await supabase
+      .from("slots").select("*").eq("branch_id", branchId).eq("slot_date", prevDate).order("start_time");
+    if (prevErr) { toast.error(prevErr.message); return; }
+    const prev = (prevSlots as Slot[]) ?? [];
+    if (prev.length === 0) { toast.error("No schedule on previous day to copy"); return; }
+    if (slots.length > 0 && !confirm("This day already has slots. Add a copy of the previous day on top?")) return;
+
+    const prevIds = prev.map((s) => s.id);
+    const { data: prevAss } = await supabase.from("slot_assignments").select("*").in("slot_id", prevIds);
+    const assignmentsByPrev = new Map<string, string[]>();
+    ((prevAss as Assignment[]) ?? []).forEach((a) => {
+      const arr = assignmentsByPrev.get(a.slot_id) ?? [];
+      arr.push(a.student_id); assignmentsByPrev.set(a.slot_id, arr);
+    });
+
+    const newSlotRows = prev.map((s) => ({
+      branch_id: branchId, slot_date: date, start_time: s.start_time, end_time: s.end_time,
+      capacity: s.capacity, notes: s.notes, created_by: user.id,
+    }));
+    const { data: inserted, error: insErr } = await supabase.from("slots").insert(newSlotRows).select("*");
+    if (insErr) { toast.error(insErr.message); return; }
+    const newSlots = (inserted as Slot[]) ?? [];
+
+    const assignRows: { slot_id: string; student_id: string }[] = [];
+    prev.forEach((p, idx) => {
+      const ns = newSlots[idx]; if (!ns) return;
+      (assignmentsByPrev.get(p.id) ?? []).forEach((sid) => assignRows.push({ slot_id: ns.id, student_id: sid }));
+    });
+    if (assignRows.length) {
+      const { error: aErr } = await supabase.from("slot_assignments").insert(assignRows);
+      if (aErr) { toast.error(aErr.message); return; }
+    }
+    toast.success("Copied previous day's schedule");
+    void load();
+  };
   const availableToAssign = useMemo(() => {
     if (!assignSlot) return [];
     const assignedAnywhereToday = new Set(assignments.map((a) => a.student_id));
