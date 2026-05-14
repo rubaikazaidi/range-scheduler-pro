@@ -12,12 +12,15 @@ export const Route = createFileRoute("/login")({
   validateSearch: (search) => ({
     redirect: typeof search.redirect === "string" && search.redirect.length > 0 ? search.redirect : "/dashboard",
   }),
-  beforeLoad: async () => {
+  beforeLoad: async ({ search }) => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
     if (session) {
+      if (typeof window !== "undefined") {
+        window.location.replace(search.redirect);
+      }
       throw redirect({ to: "/dashboard" });
     }
   },
@@ -54,7 +57,8 @@ function LoginPage() {
         return;
       }
       toast.success("Signed in");
-      await navigate({ href: search.redirect, replace: true });
+      window.location.replace(search.redirect);
+      return;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
       setErrorMessage(message);
