@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
-import { ChevronLeft, ChevronRight, Plus, Trash2, UserPlus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Plus, Trash2, UserPlus, X } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/coach/schedule")({ component: CoachSchedule });
@@ -101,6 +101,44 @@ function CoachSchedule() {
     void load();
   };
 
+  const copyFromPreviousDay = async () => {
+    if (!branchId || !user) return;
+    const prevDate = format(addDays(parseISO(date), -1), "yyyy-MM-dd");
+    const { data: prevSlots, error: prevErr } = await supabase
+      .from("slots").select("*").eq("branch_id", branchId).eq("slot_date", prevDate).order("start_time");
+    if (prevErr) { toast.error(prevErr.message); return; }
+    const prev = (prevSlots as Slot[]) ?? [];
+    if (prev.length === 0) { toast.error("No schedule on previous day to copy"); return; }
+    if (slots.length > 0 && !confirm("This day already has slots. Add a copy of the previous day on top?")) return;
+
+    const prevIds = prev.map((s) => s.id);
+    const { data: prevAss } = await supabase.from("slot_assignments").select("*").in("slot_id", prevIds);
+    const assignmentsByPrev = new Map<string, string[]>();
+    ((prevAss as Assignment[]) ?? []).forEach((a) => {
+      const arr = assignmentsByPrev.get(a.slot_id) ?? [];
+      arr.push(a.student_id); assignmentsByPrev.set(a.slot_id, arr);
+    });
+
+    const newSlotRows = prev.map((s) => ({
+      branch_id: branchId, slot_date: date, start_time: s.start_time, end_time: s.end_time,
+      capacity: s.capacity, notes: s.notes, created_by: user.id,
+    }));
+    const { data: inserted, error: insErr } = await supabase.from("slots").insert(newSlotRows).select("*");
+    if (insErr) { toast.error(insErr.message); return; }
+    const newSlots = (inserted as Slot[]) ?? [];
+
+    const assignRows: { slot_id: string; student_id: string }[] = [];
+    prev.forEach((p, idx) => {
+      const ns = newSlots[idx]; if (!ns) return;
+      (assignmentsByPrev.get(p.id) ?? []).forEach((sid) => assignRows.push({ slot_id: ns.id, student_id: sid }));
+    });
+    if (assignRows.length) {
+      const { error: aErr } = await supabase.from("slot_assignments").insert(assignRows);
+      if (aErr) { toast.error(aErr.message); return; }
+    }
+    toast.success("Copied previous day's schedule");
+    void load();
+  };
   const availableToAssign = useMemo(() => {
     if (!assignSlot) return [];
     const assignedAnywhereToday = new Set(assignments.map((a) => a.student_id));
@@ -114,6 +152,10 @@ function CoachSchedule() {
           <h1 className="text-2xl font-semibold">Schedule</h1>
           <p className="text-sm text-muted-foreground">Build daily slots and assign students.</p>
         </div>
+        <div className="flex gap-2">
+        <Button variant="outline" disabled={!branchId} onClick={copyFromPreviousDay}>
+          <Copy className="mr-1 h-4 w-4" /> Copy previous day
+        </Button>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
           <DialogTrigger asChild>
             <Button disabled={!branchId}><Plus className="mr-1 h-4 w-4" /> New slot</Button>
@@ -129,6 +171,7 @@ function CoachSchedule() {
             <DialogFooter><Button onClick={createSlot}>Create</Button></DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
