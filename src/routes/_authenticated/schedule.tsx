@@ -100,7 +100,7 @@ function StudentSchedule() {
           {upcoming.map(({ a, s }) => (
             <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
               <div>
-                <p className="font-semibold">{format(new Date(s.slot_date + "T00:00"), "EEE, MMM d")} · {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</p>
+                <p className="font-semibold">{format(new Date(s.slot_date + "T00:00"), "EEE, MMM d")}{batchNameFor(s) ? ` · ${batchNameFor(s)}` : ""} · {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</p>
                 {s.notes && <p className="text-sm text-muted-foreground">{s.notes}</p>}
               </div>
               <Button size="sm" variant="outline" onClick={() => setOpenReq(a)}>
