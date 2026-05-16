@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthLayout() {
-  const { loading, user, profile, isCoach, isAdmin, signOut } = useAuth();
+  const { loading, user, profile, isCoach, isAdmin, isStudent, signOut } = useAuth();
   const location = useLocation();
   
 
@@ -32,6 +32,28 @@ function AuthLayout() {
   }
   if (!user) {
     return null;
+  }
+
+  if (isStudent && !isCoach && profile?.status !== "approved") {
+    const pending = profile?.status !== "rejected";
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary">
+          <Target className="h-7 w-7 text-accent" />
+        </div>
+        <h1 className="text-2xl font-semibold">
+          {pending ? "Waiting for coach approval for your account" : "Your registration was rejected"}
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          {pending
+            ? "Your account has been created and is pending approval from a coach. You'll get access to your dashboard and schedule once approved."
+            : "Please contact your coach for more information."}
+        </p>
+        <Button className="mt-6" variant="outline" onClick={signOut}>
+          <LogOut className="mr-1 h-4 w-4" /> Sign out
+        </Button>
+      </div>
+    );
   }
 
   const studentLinks = [
