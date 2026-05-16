@@ -21,11 +21,11 @@ function Index() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-card p-6 text-center">
             <GraduationCap className="mx-auto h-8 w-8 text-accent" />
-            <h2 className="mt-3 text-lg font-semibold">Student</h2>
+            <h2 className="mt-3 text-lg font-semibold">Shooter</h2>
             <p className="mt-1 text-sm text-muted-foreground">Check your batch timings and request changes.</p>
             <div className="mt-5 flex flex-col gap-2">
               <Button asChild>
-                <Link to="/login">Student log in</Link>
+                <Link to="/login">Shooter log in</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/signup">Sign up</Link>
