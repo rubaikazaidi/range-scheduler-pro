@@ -51,6 +51,19 @@ function StudentSchedule() {
     return <p className="text-muted-foreground">Your account is {profile?.status}. Once a coach approves you, your schedule will appear here.</p>;
   }
 
+  const ordinal = (n: number) => {
+    const v = n % 100;
+    if (v >= 11 && v <= 13) return `${n}th`;
+    switch (n % 10) { case 1: return `${n}st`; case 2: return `${n}nd`; case 3: return `${n}rd`; default: return `${n}th`; }
+  };
+  const batchNameFor = (slot: Slot) => {
+    const sameDay = branchSlots
+      .filter((b) => b.slot_date === slot.slot_date)
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+    const idx = sameDay.findIndex((b) => b.id === slot.id);
+    return idx >= 0 ? `${ordinal(idx + 1)} Batch` : "";
+  };
+
   const upcoming = useMemo(() => {
     return assignments
       .map((a) => ({ a, s: mySlots[a.slot_id] }))
@@ -87,7 +100,7 @@ function StudentSchedule() {
           {upcoming.map(({ a, s }) => (
             <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
               <div>
-                <p className="font-semibold">{format(new Date(s.slot_date + "T00:00"), "EEE, MMM d")} · {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</p>
+                <p className="font-semibold">{format(new Date(s.slot_date + "T00:00"), "EEE, MMM d")}{batchNameFor(s) ? ` · ${batchNameFor(s)}` : ""} · {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</p>
                 {s.notes && <p className="text-sm text-muted-foreground">{s.notes}</p>}
               </div>
               <Button size="sm" variant="outline" onClick={() => setOpenReq(a)}>
