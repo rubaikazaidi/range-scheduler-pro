@@ -197,13 +197,19 @@ function CoachSchedule() {
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-muted-foreground">No slots for this day.</div>
       ) : (
         <div className="space-y-3">
-          {slots.map((s) => {
+          {slots.map((s, idx) => {
             const ass = slotAssignments(s.id);
+            const ordinal = (n: number) => {
+              const v = n % 100;
+              if (v >= 11 && v <= 13) return `${n}th`;
+              switch (n % 10) { case 1: return `${n}st`; case 2: return `${n}nd`; case 3: return `${n}rd`; default: return `${n}th`; }
+            };
+            const batchName = `${ordinal(idx + 1)} Batch`;
             return (
               <div key={s.id} className="rounded-lg border border-border bg-card p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-lg font-semibold">{s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}</p>
+                    <p className="text-lg font-semibold">{batchName} · {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}</p>
                     <p className="text-sm text-muted-foreground">{ass.length} / {s.capacity} shooters{s.notes ? ` · ${s.notes}` : ""}</p>
                   </div>
                   <div className="flex gap-2">
